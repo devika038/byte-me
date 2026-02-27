@@ -6,12 +6,12 @@ app = Flask(__name__)
 app.secret_key = "supersecretkey"
 
 
-
-
+# ------------------ DATABASE INIT ------------------
 
 def init_db():
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
+
     c.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,45 +20,38 @@ def init_db():
             credits INTEGER DEFAULT 10
         )
     """)
+
     c.execute("""
-    CREATE TABLE IF NOT EXISTS listings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT,
-        description TEXT,
-        type TEXT,
-        price INTEGER,
-        owner_id INTEGER,
-        available INTEGER DEFAULT 1,
-        available_from TEXT,
-        available_to TEXT
-    )
-""")
+        CREATE TABLE IF NOT EXISTS listings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT,
+            description TEXT,
+            type TEXT,
+            price INTEGER,
+            owner_id INTEGER,
+            available INTEGER DEFAULT 1,
+            available_from TEXT,
+            available_to TEXT
+        )
+    """)
+
     c.execute("""
-    CREATE TABLE IF NOT EXISTS requests (
-       id INTEGER PRIMARY KEY AUTOINCREMENT,
-        listing_id INTEGER,
-        requester_id INTEGER,
-        start_date TEXT,
-        end_date TEXT,
-        status TEXT DEFAULT 'Pending',
-        returned INTEGER DEFAULT 0
-    )
-""")
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS reviews (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        reviewer_id INTEGER,
-        reviewee_id INTEGER,
-        rating INTEGER,
-        comment TEXT,
-        request_id INTEGER
-    )
-""")
+        CREATE TABLE IF NOT EXISTS requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            listing_id INTEGER,
+            requester_id INTEGER,
+            start_date TEXT,
+            end_date TEXT,
+            status TEXT DEFAULT 'Pending',
+            returned INTEGER DEFAULT 0
+        )
+    """)
+
     conn.commit()
     conn.close()
 
-    
 
+# ------------------ AUTH ------------------
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -68,7 +61,8 @@ def signup():
 
         conn = sqlite3.connect("database.db")
         c = conn.cursor()
-        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+        c.execute("INSERT INTO users (username, password) VALUES (?, ?)",
+                  (username, password))
         conn.commit()
         conn.close()
 
@@ -85,7 +79,8 @@ def login():
 
         conn = sqlite3.connect("database.db")
         c = conn.cursor()
-        c.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
+        c.execute("SELECT * FROM users WHERE username=? AND password=?",
+                  (username, password))
         user = c.fetchone()
         conn.close()
 
@@ -93,23 +88,10 @@ def login():
             session["user_id"] = user[0]
             session["username"] = user[1]
             return redirect("/dashboard")
-        else:
-            return "Invalid credentials"
+
+        return "Invalid credentials"
 
     return render_template("login.html")
-
-
-@app.route("/dashboard")
-def dashboard():
-    if "user_id" not in session:
-        return redirect("/login")
-    conn = sqlite3.connect("database.db")
-    c = conn.cursor()
-    c.execute("SELECT credits FROM users WHERE id=?", (session["user_id"],))
-    credits = c.fetchone()[0]
-    conn.close()
-
-    return render_template("dashboard.html", username=session["username"], credits=credits)
 
 
 @app.route("/logout")
@@ -118,41 +100,58 @@ def logout():
     return redirect("/login")
 
 
+# ------------------ DASHBOARD ------------------
+
+@app.route("/dashboard")
+def dashboard():
+    if "user_id" not in session:
+        return redirect("/login")
+
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+    c.execute("SELECT credits FROM users WHERE id=?",
+              (session["user_id"],))
+    credits = c.fetchone()[0]
+    conn.close()
+
+    return render_template("dashboard.html",
+                           username=session["username"],
+                           credits=credits)
+
+
+# ------------------ POST LISTING ------------------
+
 @app.route("/post", methods=["GET", "POST"])
 def post():
     if "user_id" not in session:
         return redirect("/login")
 
     if request.method == "POST":
-        title = request.form["title"]
-        description = request.form["description"]
-        listing_type = request.form["type"]
-        price = request.form["price"]
-        available_from = request.form["available_from"]
-        available_to = request.form["available_to"]
-
         conn = sqlite3.connect("database.db")
         c = conn.cursor()
+
         c.execute("""
             INSERT INTO listings 
             (title, description, type, price, owner_id, available_from, available_to)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
-            title,
-            description,
-            listing_type,
-            price,
+            request.form["title"],
+            request.form["description"],
+            request.form["type"],
+            request.form["price"],
             session["user_id"],
-            available_from,
-            available_to
+            request.form["available_from"],
+            request.form["available_to"]
         ))
+
         conn.commit()
         conn.close()
-
         return redirect("/dashboard")
 
     return render_template("post.html")
 
+
+# ------------------ BROWSE ------------------
 
 @app.route("/browse")
 def browse():
@@ -161,19 +160,22 @@ def browse():
 
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
+
     c.execute("""
-        SELECT listings.id, title, description, type, price, username,available_from, available_to
+        SELECT listings.id, title, description, type, price, username,
+               available_from, available_to
         FROM listings
         JOIN users ON listings.owner_id = users.id
         WHERE available=1 AND owner_id != ?
     """, (session["user_id"],))
-    
+
     listings = c.fetchall()
     conn.close()
 
     return render_template("browse.html", listings=listings)
 
 
+# ------------------ REQUEST ITEM ------------------
 
 @app.route("/request/<int:listing_id>", methods=["POST"])
 def request_listing(listing_id):
@@ -183,7 +185,6 @@ def request_listing(listing_id):
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
 
-    # 🔹 Get listing price
     c.execute("SELECT price FROM listings WHERE id=?", (listing_id,))
     listing = c.fetchone()
 
@@ -193,20 +194,24 @@ def request_listing(listing_id):
 
     price = listing[0]
 
-    # 🔹 Get buyer credits
-    c.execute("SELECT credits FROM users WHERE id=?", (session["user_id"],))
+    c.execute("SELECT credits FROM users WHERE id=?",
+              (session["user_id"],))
     buyer_credits = c.fetchone()[0]
 
-    # 🔥 CHECK HERE
     if buyer_credits < price:
         conn.close()
-        return "You do not have enough credits to request this item!"
+        return "Not enough credits"
 
-    # 🔹 Insert request
     c.execute("""
-        INSERT INTO requests (listing_id, requester_id, status)
-        VALUES (?, ?, 'Pending')
-    """, (listing_id, session["user_id"]))
+        INSERT INTO requests 
+        (listing_id, requester_id, start_date, end_date)
+        VALUES (?, ?, ?, ?)
+    """, (
+        listing_id,
+        session["user_id"],
+        request.form["start_date"],
+        request.form["end_date"]
+    ))
 
     conn.commit()
     conn.close()
@@ -214,28 +219,7 @@ def request_listing(listing_id):
     return redirect("/my_requests")
 
 
-@app.route("/my_listings")
-def my_listings():
-    if "user_id" not in session:
-        return redirect("/login")
-
-    conn = sqlite3.connect("database.db")
-    c = conn.cursor()
-
-    c.execute("""
-        SELECT requests.id, listings.title, users.username, requests.status
-        FROM requests
-        JOIN listings ON requests.listing_id = listings.id
-        JOIN users ON requests.requester_id = users.id
-        WHERE listings.owner_id = ?
-    """, (session["user_id"],))
-
-    requests_data = c.fetchall()
-    conn.close()
-
-    return render_template("my_listings.html", requests=requests_data)
-
-
+# ------------------ MY REQUESTS ------------------
 
 @app.route("/my_requests")
 def my_requests():
@@ -246,7 +230,9 @@ def my_requests():
     c = conn.cursor()
 
     c.execute("""
-        SELECT requests.id, listings.title, requests.status
+        SELECT requests.id, listings.title,
+               requests.start_date, requests.end_date,
+               requests.status, requests.returned
         FROM requests
         JOIN listings ON requests.listing_id = listings.id
         WHERE requests.requester_id = ?
@@ -255,69 +241,37 @@ def my_requests():
     requests_data = c.fetchall()
     conn.close()
 
-    return render_template("my_requests.html", requests=requests_data)
+    return render_template("my_requests.html",
+                           requests=requests_data)
 
-@app.route("/accept/<int:request_id>")
-def accept_request(request_id):
+
+# ------------------ MY LISTINGS (Incoming Requests) ------------------
+
+@app.route("/my_listings")
+def my_listings():
     if "user_id" not in session:
         return redirect("/login")
 
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
 
-    # Get listing price, owner, requester
     c.execute("""
-        SELECT listings.price, listings.owner_id, requests.requester_id, listings.id
+        SELECT requests.id, listings.title, users.username,
+               requests.start_date, requests.end_date,
+               requests.status, requests.returned
         FROM requests
         JOIN listings ON requests.listing_id = listings.id
-        WHERE requests.id = ?
-    """, (request_id,))
+        JOIN users ON requests.requester_id = users.id
+        WHERE listings.owner_id = ?
+    """, (session["user_id"],))
 
-    data = c.fetchone()
-
-    if data:
-        price, owner_id, requester_id, listing_id = data
-
-    # 🔥 Step 1: Get buyer credits
-        c.execute("SELECT credits FROM users WHERE id=?", (requester_id,))
-        buyer_credits = c.fetchone()[0]
-
-    # 🔥 Step 2: Check if enough credits
-        if buyer_credits < price:
-            conn.close()
-            return "Buyer does not have enough credits!"
-
-    # 🔥 Step 3: Then transfer credits
-        c.execute("UPDATE users SET credits = credits - ? WHERE id = ?", (price, requester_id))
-
-        c.execute("UPDATE users SET credits = credits + ? WHERE id = ?", (price, owner_id))
-
-        c.execute("UPDATE requests SET status='Accepted' WHERE id = ?", (request_id,))
-
-        c.execute("UPDATE listings SET available = 0 WHERE id = ?", (listing_id,))
-
-    conn.commit()
+    requests_data = c.fetchall()
     conn.close()
 
-    return redirect("/my_listings")
+    return render_template("my_listings.html",
+                           requests=requests_data)
 
-
-@app.route("/reject/<int:request_id>")
-def reject_request(request_id):
-    if "user_id" not in session:
-        return redirect("/login")
-
-    conn = sqlite3.connect("database.db")
-    c = conn.cursor()
-
-    c.execute("UPDATE requests SET status='Rejected' WHERE id = ?", (request_id,))
-
-    conn.commit()
-    conn.close()
-
-    return redirect("/my_listings")
-
-
+# ------------------ MY POSTED LISTINGS ------------------
 
 @app.route("/my_posts")
 def my_posts():
@@ -339,43 +293,76 @@ def my_posts():
     return render_template("my_posts.html", listings=listings)
 
 
-@app.route("/delete/<int:listing_id>")
-def delete_listing(listing_id):
+# ------------------ ACCEPT REQUEST ------------------
+
+@app.route("/accept/<int:request_id>")
+def accept_request(request_id):
     if "user_id" not in session:
         return redirect("/login")
 
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
 
-    # 🔒 Ensure only owner can delete
-    c.execute("SELECT owner_id FROM listings WHERE id=?", (listing_id,))
-    result = c.fetchone()
+    c.execute("""
+        SELECT listings.price, listings.owner_id,
+               requests.requester_id, listings.id
+        FROM requests
+        JOIN listings ON requests.listing_id = listings.id
+        WHERE requests.id = ?
+    """, (request_id,))
 
-    if not result:
+    data = c.fetchone()
+
+    if not data:
         conn.close()
-        return "Listing not found"
+        return "Invalid request"
 
-    owner_id = result[0]
+    price, owner_id, requester_id, listing_id = data
 
-    if owner_id != session["user_id"]:
+    c.execute("SELECT credits FROM users WHERE id=?",
+              (requester_id,))
+    buyer_credits = c.fetchone()[0]
+
+    if buyer_credits < price:
         conn.close()
-        return "Unauthorized"
+        return "Buyer does not have enough credits"
 
-    # 🔥 Delete related requests first (important)
-    c.execute("DELETE FROM requests WHERE listing_id=?", (listing_id,))
+    c.execute("UPDATE users SET credits = credits - ? WHERE id=?",
+              (price, requester_id))
+    c.execute("UPDATE users SET credits = credits + ? WHERE id=?",
+              (price, owner_id))
 
-    # 🔥 Then delete listing
-    c.execute("DELETE FROM listings WHERE id=?", (listing_id,))
+    c.execute("UPDATE requests SET status='Accepted' WHERE id=?",
+              (request_id,))
+    c.execute("UPDATE listings SET available=0 WHERE id=?",
+              (listing_id,))
 
     conn.commit()
     conn.close()
 
-    return redirect("/my_posts")
+    return redirect("/my_listings")
 
 
+# ------------------ REJECT ------------------
 
-    return redirect("/my_requests")
+@app.route("/reject/<int:request_id>")
+def reject_request(request_id):
+    if "user_id" not in session:
+        return redirect("/login")
 
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+
+    c.execute("UPDATE requests SET status='Rejected' WHERE id=?",
+              (request_id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/my_listings")
+
+
+# ------------------ RETURN ITEM ------------------
 
 @app.route("/return/<int:request_id>")
 def return_item(request_id):
@@ -385,13 +372,11 @@ def return_item(request_id):
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
 
-    # Get request details
     c.execute("""
         SELECT end_date, requester_id, listing_id
-        FROM requests
-        WHERE id = ?
+        FROM requests WHERE id=?
     """, (request_id,))
-    
+
     data = c.fetchone()
 
     if not data:
@@ -403,22 +388,16 @@ def return_item(request_id):
     today = datetime.now().date()
     due_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
 
-    # 🔥 LATE PENALTY SYSTEM
     if today > due_date:
         late_days = (today - due_date).days
-        penalty = late_days * 2   # 2 credits per day late
+        penalty = late_days * 2
+        c.execute("UPDATE users SET credits = credits - ? WHERE id=?",
+                  (penalty, requester_id))
 
-        c.execute("""
-            UPDATE users 
-            SET credits = credits - ?
-            WHERE id = ?
-        """, (penalty, requester_id))
-
-    # Mark returned
-    c.execute("UPDATE requests SET returned=1 WHERE id=?", (request_id,))
-
-    # Make listing available again
-    c.execute("UPDATE listings SET available=1 WHERE id=?", (listing_id,))
+    c.execute("UPDATE requests SET returned=1 WHERE id=?",
+              (request_id,))
+    c.execute("UPDATE listings SET available=1 WHERE id=?",
+              (listing_id,))
 
     conn.commit()
     conn.close()
@@ -426,6 +405,8 @@ def return_item(request_id):
     return redirect("/my_listings")
 
 
+# ------------------ RUN ------------------
+
 if __name__ == "__main__":
-    init_db()   # 👈 THIS LINE creates table if not exists
+    init_db()
     app.run(debug=True)

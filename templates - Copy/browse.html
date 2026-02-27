@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browse Listings</title>
+</head>
+<body>
+
+    <h2>Available Listings</h2>
+
+    {% for listing in listings %}
+        <hr>
+        <h3>{{ listing[1] }}</h3>
+        <p>{{ listing[2] }}</p>
+        <p>Type: {{ listing[3] }}</p>
+        <p>Price: {{ listing[4] }} credits</p>
+        <p>Posted by: {{ listing[5] }}</p>
+        <p><strong>Available From:</strong> {{ listing[6] }}</p>
+        <p><strong>Available To:</strong> {{ listing[7] }}</p>
+
+        <form action="/request/{{ listing[0] }}" method="POST">
+    <label>Start Date:</label>
+    <input type="date" name="start_date" required>
+
+    <label>End Date:</label>
+    <input type="date" name="end_date" required>
+
+    <button type="submit">Request</button>
+    </form>
+    {% endfor %}
+
+    <br><br>
+    <a href="/dashboard">Back to Dashboard</a>
+
+</body>
+</html><!DOCTYPE html>
+<html>
+<head>
+    <title>Browse Listings</title>
+</head>
+<body>
+
+    <h2>Available Listings</h2>
+
+    {% for listing in listings %}
+        <hr>
+        <h3>{{ listing[1] }}</h3>
+        <p>{{ listing[2] }}</p>
+        <p>Type: {{ listing[3] }}</p>
+        <p>Price: {{ listing[4] }} credits</p>
+        <p>Posted by: {{ listing[5] }}</p>
+        <p><strong>Available From:</strong> {{ listing[6] }}</p>
+        <p><strong>Available To:</strong> {{ listing[7] }}</p>
+
+        <!-- 🔥 REPLACE THE OLD LINK WITH THIS FORM -->
+
+        <form action="/request/{{ listing[0] }}" method="POST">
+            <label>Start Date:</label>
+            <input type="date" name="start_date" required>
+
+            <label>End Date:</label>
+            <input type="date" name="end_date" required>
+
+            <button type="submit">Request</button>
+        </form>
+
+    {% endfor %}
+
+    <br><br>
+    <a href="/dashboard">Back to Dashboard</a>
+
+</body>
+</html>

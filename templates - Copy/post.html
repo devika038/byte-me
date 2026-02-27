@@ -7,33 +7,28 @@
 
     <h2>Create Listing</h2>
 
-    <form method="POST" action="/post">
-
+    <form method="POST">
         <input type="text" name="title" placeholder="Title" required>
         <br><br>
 
         <textarea name="description" placeholder="Description" required></textarea>
         <br><br>
 
-        <select name="type" required>
+        <select name="type">
             <option value="Item">Item</option>
             <option value="Skill">Skill</option>
         </select>
         <br><br>
 
-        <input type="number" name="price" placeholder="Credits Required" min="1" required>
+        <input type="number" name="price" placeholder="Credits Required" required>
         <br><br>
-
         <label>Available From:</label>
-        <input type="date" name="available_from" required>
-        <br><br>
+    <input type="date" name="available_from" required>
 
-        <label>Available To:</label>
-        <input type="date" name="available_to" required>
-        <br><br>
+    <label>Available To:</label>
+    <input type="date" name="available_to" required>
 
         <button type="submit">Post</button>
-
     </form>
 
     <br>
