@@ -18,6 +18,9 @@
             <a href="/accept/{{ req[0] }}">Accept</a>
             <a href="/reject/{{ req[0] }}">Reject</a>
         {% endif %}
+        {% if request[3] == "Accepted" %}
+        <a href="/return/{{ request[0] }}">Mark Returned</a>
+        {% endif %}
 
     {% endfor %}
 {% else %}

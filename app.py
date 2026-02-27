@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, session
 import sqlite3
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
@@ -174,7 +175,7 @@ def browse():
 
 
 
-@app.route("/request/<int:listing_id>")
+@app.route("/request/<int:listing_id>", methods=["POST"])
 def request_listing(listing_id):
     if "user_id" not in session:
         return redirect("/login")
@@ -374,6 +375,55 @@ def delete_listing(listing_id):
 
 
     return redirect("/my_requests")
+
+
+@app.route("/return/<int:request_id>")
+def return_item(request_id):
+    if "user_id" not in session:
+        return redirect("/login")
+
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+
+    # Get request details
+    c.execute("""
+        SELECT end_date, requester_id, listing_id
+        FROM requests
+        WHERE id = ?
+    """, (request_id,))
+    
+    data = c.fetchone()
+
+    if not data:
+        conn.close()
+        return "Invalid request"
+
+    end_date_str, requester_id, listing_id = data
+
+    today = datetime.now().date()
+    due_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+
+    # 🔥 LATE PENALTY SYSTEM
+    if today > due_date:
+        late_days = (today - due_date).days
+        penalty = late_days * 2   # 2 credits per day late
+
+        c.execute("""
+            UPDATE users 
+            SET credits = credits - ?
+            WHERE id = ?
+        """, (penalty, requester_id))
+
+    # Mark returned
+    c.execute("UPDATE requests SET returned=1 WHERE id=?", (request_id,))
+
+    # Make listing available again
+    c.execute("UPDATE listings SET available=1 WHERE id=?", (listing_id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/my_listings")
 
 
 if __name__ == "__main__":
