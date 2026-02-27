@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Listing Requests</title>
+</head>
+<body>
+
+<h2>Requests for My Listings</h2>
+
+{% if requests %}
+    {% for req in requests %}
+        <hr>
+        <p><strong>Listing:</strong> {{ req[1] }}</p>
+        <p><strong>Requested by:</strong> {{ req[2] }}</p>
+        <p><strong>Status:</strong> {{ req[3] }}</p>
+
+        {% if req[3] == 'Pending' %}
+            <a href="/accept/{{ req[0] }}">Accept</a>
+            <a href="/reject/{{ req[0] }}">Reject</a>
+        {% endif %}
+
+    {% endfor %}
+{% else %}
+    <p>No requests yet.</p>
+{% endif %}
+
+<br><br>
+<a href="/dashboard">Back to Dashboard</a>
+
+</body>
+</html>

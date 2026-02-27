@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Posted Listings</title>
+</head>
+<body>
+
+<h2>My Posted Listings</h2>
+
+{% if listings %}
+   {% for item in listings %}
+    <hr>
+    <p><strong>Title:</strong> {{ item[1] }}</p>
+    <p><strong>Description:</strong> {{ item[2] }}</p>
+    <p><strong>Type:</strong> {{ item[3] }}</p>
+    <p><strong>Price:</strong> {{ item[4] }}</p>
+    <p><strong>Status:</strong>
+        {% if item[5] == 1 %}
+            Available
+        {% else %}
+            Not Available
+        {% endif %}
+    </p>
+
+    <a href="/delete/{{ item[0] }}">Delete</a>
+
+{% endfor %}
+{% else %}
+    <p>You have not posted anything yet.</p>
+{% endif %}
+
+<br><br>
+<a href="/dashboard">Back to Dashboard</a>
+
+</body>
+</html>

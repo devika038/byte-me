@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Requests</title>
+</head>
+<body>
+
+<h2>My Requests</h2>
+
+{% if requests %}
+    {% for req in requests %}
+        <hr>
+        <p><strong>Listing:</strong> {{ req[1] }}</p>
+        <p><strong>Status:</strong> {{ req[2] }}</p>
+
+        
+
+    {% endfor %}
+{% else %}
+    <p>You have not requested anything yet.</p>
+{% endif %}
+
+<br><br>
+<a href="/dashboard">Back to Dashboard</a>
+
+</body>
+</html>

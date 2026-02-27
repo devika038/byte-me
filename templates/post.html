@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Post Listing</title>
+</head>
+<body>
+
+    <h2>Create Listing</h2>
+
+    <form method="POST">
+        <input type="text" name="title" placeholder="Title" required>
+        <br><br>
+
+        <textarea name="description" placeholder="Description" required></textarea>
+        <br><br>
+
+        <select name="type">
+            <option value="Item">Item</option>
+            <option value="Skill">Skill</option>
+        </select>
+        <br><br>
+
+        <input type="number" name="price" placeholder="Credits Required" required>
+        <br><br>
+        <label>Available From:</label>
+    <input type="date" name="available_from" required>
+
+    <label>Available To:</label>
+    <input type="date" name="available_to" required>
+
+        <button type="submit">Post</button>
+    </form>
+
+    <br>
+    <a href="/dashboard">Back to Dashboard</a>
+
+</body>
+</html>
