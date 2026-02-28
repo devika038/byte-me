@@ -2,26 +2,27 @@
 <html>
 <head>
     <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-    <h2>Welcome {{ username }}</h2>
-    <p>Your Credits: {{ credits }}</p>
+    <h1>WELCOME {{ username }}</h1>
+    <h3>YOUR CREDITS: {{ credits }}</h3>
 
     <br>
 
-    <a href="/post">Post Listing</a>
+    <a href="/post">POST LISTING</a>
     <br><br>
-    <a href="/browse">Browse Listings</a>
+    <a href="/browse">BROWSE LISTINGS</a>
     <br><br>
     
-    <a href="/my_listings">My Listing Requests</a>
+    <a href="/my_listings">MY LISTING REQUESTS</a>
 <br><br>
-<a href="/my_requests">My Requests</a>
+<a href="/my_requests">MY REQUESTS</a>
 <br><br>
-<a href="/my_posts">My Posted Listings</a><br>
+<a href="/my_posts">MY POSTED LISTINGS</a><br>
 <br><br>
-<a href="/logout">Logout</a>
+<a href="/logout">LOGOUT</a>
 
 </body>
 </html>

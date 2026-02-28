@@ -2,17 +2,22 @@
 <html>
 <head>
     <title>Post Listing</title>
+    
+    <body style="margin:0; background-color:#2c3e50;"></body>
 </head>
+
+
 <body>
 
-    <h2>Create Listing</h2>
+    <h2 style="text-align:center;color:aliceblue;font-size: 35px;font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;">CREATE LISTING</h2>
 
     <form method="POST" action="/post">
+        <div style="text-align: center; color: white;">
 
         <input type="text" name="title" placeholder="Title" required>
         <br><br>
 
-        <textarea name="description" placeholder="Description" required></textarea>
+        <textarea name="description" placeholder="Description" required ></textarea>
         <br><br>
 
         <select name="type" required>
@@ -33,6 +38,7 @@
         <br><br>
 
         <button type="submit">Post</button>
+        </div>
 
     </form>
 

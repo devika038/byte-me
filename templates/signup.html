@@ -2,14 +2,100 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Sign Up</title>
+
+    <style>
+        body {
+            margin: 0;
+            background-color: #2c3e50;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 400px;
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0px 10px 25px rgba(0,0,0,0.2);
+
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        td {
+            padding: 10px 0;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #17a673;
+        }
+    </style>
 </head>
+
 <body>
-    <form method="POST">
-    <input type="text" name="username" placeholder="Username">
-    <input type="password" name="password" placeholder="Password">
-    <button type="submit">Sign Up</button>
-</form>
+
+    <div class="container">
+        <h2>Sign Up</h2>
+
+        <form method="POST">
+            <table>
+                <tr>
+                    <td>Username</td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="text" name="username" placeholder="Enter Username" required>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Password</td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="password" name="password" placeholder="Enter Password" required>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <button type="submit">Sign Up</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+
+    </div>
+
 </body>
 </html>
