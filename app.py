@@ -294,14 +294,15 @@ def my_listings():
     c = conn.cursor()
 
     c.execute("""
-        SELECT requests.id, listings.title, users.username,
-               requests.start_date, requests.end_date,
-               requests.status, requests.returned
-        FROM requests
-        JOIN listings ON requests.listing_id = listings.id
-        JOIN users ON requests.requester_id = users.id
-        WHERE listings.owner_id = ?
-    """, (session["user_id"],))
+    SELECT requests.id,
+           listings.title,
+           users.username,
+           requests.status
+    FROM requests
+    JOIN listings ON requests.listing_id = listings.id
+    JOIN users ON requests.requester_id = users.id
+    WHERE listings.owner_id = ?
+""", (session["user_id"],))
 
     requests_data = c.fetchall()
     conn.close()
