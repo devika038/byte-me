@@ -268,20 +268,21 @@ def my_requests():
     c = conn.cursor()
 
     c.execute("""
-        SELECT requests.id, listings.title,
-               requests.start_date, requests.end_date,
-               requests.status, requests.returned
+        SELECT
+            requests.id,
+            listings.title,
+            users.username,
+            requests.status
         FROM requests
         JOIN listings ON requests.listing_id = listings.id
+        JOIN users ON listings.owner_id = users.id
         WHERE requests.requester_id = ?
     """, (session["user_id"],))
 
     requests_data = c.fetchall()
     conn.close()
 
-    return render_template("my_requests.html",
-                           requests=requests_data)
-
+    return render_template("my_requests.html", requests=requests_data)
 
 # ------------------ MY LISTINGS (Incoming Requests) ------------------
 
@@ -294,10 +295,11 @@ def my_listings():
     c = conn.cursor()
 
     c.execute("""
-    SELECT requests.id,
-           listings.title,
-           users.username,
-           requests.status
+    SELECT
+        requests.id,
+        listings.title,
+        users.username,
+        requests.status
     FROM requests
     JOIN listings ON requests.listing_id = listings.id
     JOIN users ON requests.requester_id = users.id
