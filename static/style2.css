@@ -1,0 +1,53 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color:#2f63c5;
+
+    font-family:'Times New Roman', Times, serif;
+    text-align: center;
+}
+
+/* Title */
+h1 {
+    margin-top: 30px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    color: #1f3b66;
+}
+
+/* Logo */
+img {
+    width: 160px;
+    margin-top: 10px;
+    margin-bottom: 25px;
+}
+
+/* Main box */
+.home-box {
+    width: 320px;
+    margin: auto;
+    padding: 25px;
+    background-color: white;
+    border-radius: 10px;
+
+    /* simple executive shadow */
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.12);
+}
+
+/* Menu links */
+.home-box a {
+    display: block;
+    text-decoration: none;
+    color: white;
+    background-color: #3f7be8;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Hover */
+.home-box a:hover {
+    background-color: #2f63c5;
+}

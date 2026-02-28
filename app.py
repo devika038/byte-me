@@ -2,8 +2,14 @@ from flask import Flask, render_template, request, redirect, session
 import sqlite3
 from datetime import datetime
 
+
+
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
+@app.route('/')
+def home():
+    return render_template('home.html')
+
 
 
 # ------------------ DATABASE INIT ------------------
@@ -150,6 +156,38 @@ def post():
 
     return render_template("post.html")
 
+
+#---delete
+@app.route("/delete/<int:listing_id>", methods=["POST"])
+def delete_listing(listing_id):
+    if "user_id" not in session:
+        return redirect("/login")
+
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+
+    # Make sure the listing exists and belongs to this user
+    c.execute("SELECT owner_id FROM listings WHERE id = ?", (listing_id,))
+    row = c.fetchone()
+
+    if row is None:
+        conn.close()
+        return "Listing not found"
+
+    if row[0] != session["user_id"]:
+        conn.close()
+        return "Unauthorized"
+
+    # Delete all requests for this listing first
+    c.execute("DELETE FROM requests WHERE listing_id = ?", (listing_id,))
+
+    # Delete the listing
+    c.execute("DELETE FROM listings WHERE id = ?", (listing_id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/my_posts")
 
 # ------------------ BROWSE ------------------
 
